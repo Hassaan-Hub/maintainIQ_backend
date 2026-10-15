@@ -8,6 +8,7 @@ const userRoutes = require("./routes/user.routes");
 const dashboardRoutes = require("./routes/dashboard.routes");
 const publicRoutes = require("./routes/public.routes");
 const uploadRoutes = require("./routes/upload.routes");
+const { IS_PRODUCTION } = require("./config/env");
 
 const app = express();
 
@@ -15,13 +16,13 @@ const app = express();
 app.disable("x-powered-by");
 
 // In production the public frontend origin must be configured explicitly.
-if (process.env.NODE_ENV === "production" && !process.env.FRONTEND_URL) {
+if (IS_PRODUCTION && !process.env.FRONTEND_URL) {
   throw new Error("FRONTEND_URL must be set in production.");
 }
 
 // A strong JWT secret is mandatory in production; elsewhere a short secret only
 // produces a warning. The secret value itself is never printed.
-if (process.env.NODE_ENV === "production") {
+if (IS_PRODUCTION) {
   if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
     throw new Error("JWT_SECRET must be set (at least 32 characters) in production.");
   }

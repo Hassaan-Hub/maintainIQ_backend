@@ -136,6 +136,38 @@ npm test
 Run from the `backend/` directory so `.env` is found. If `MONGODB_URI` is
 unreachable the tests fail fast with a clear message.
 
+## Deployment (Vercel)
+
+- **Live URL:** https://maintain-iq-backend-dun.vercel.app
+- **Project root:** `backend` (entry `server.js`, built with `@vercel/node` per
+  `vercel.json`; all paths route to `server.js`).
+- The API mounts every route under `/api`, e.g.
+  `https://maintain-iq-backend-dun.vercel.app/api/health`.
+
+Environment variables (Project → Settings → Environment Variables, then
+redeploy). `NODE_ENV=production` is mandatory — without it the production-only
+rules below are skipped (Vercel's `VERCEL_ENV` is also honoured):
+
+| Name | Required | Value / notes |
+| --- | --- | --- |
+| `NODE_ENV` | yes | `production` |
+| `FRONTEND_URL` | yes | `https://maintain-iq-frontend-one.vercel.app` (CORS origin + QR links; the app refuses to start in production without it) |
+| `MONGODB_URI` | yes | MongoDB Atlas connection string |
+| `JWT_SECRET` | yes | at least 32 characters (the app refuses to start otherwise) |
+| `JWT_EXPIRES_IN` | no | e.g. `1d` |
+| `IMAGEKIT_PUBLIC_KEY` / `IMAGEKIT_PRIVATE_KEY` / `IMAGEKIT_URL_ENDPOINT` | no | enable asset image uploads; leave unset to disable |
+| `IMAGEKIT_UPLOAD_FOLDER` | no | e.g. `/maintainiq/assets` |
+| rate-limit `*_RATE_LIMIT_*` | no | only to tune the defaults |
+
+Notes:
+
+- No `Domain` is set on the auth cookie; in production it uses
+  `SameSite=None; Secure` because the frontend and backend are different sites
+  (`vercel.app` is a public suffix), so cross-origin credentialed requests work.
+- Only the single origin in `FRONTEND_URL` is allowed by CORS, so changing the
+  frontend domain requires updating this variable and redeploying.
+- `PORT` is provided by Vercel and must not be set manually.
+
 ## API overview
 
 See [docs/API.md](docs/API.md) for full request/response details. Summary:

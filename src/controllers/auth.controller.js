@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user.model");
 const { AUTH_COOKIE } = require("../middleware/auth.middleware");
+const { IS_PRODUCTION } = require("../config/env");
 
 // Cost factor used when hashing passwords (higher = slower but stronger).
 const SALT_ROUNDS = 10;
@@ -31,10 +32,15 @@ const DUMMY_PASSWORD_HASH = bcrypt.hashSync(
 
 // Builds the shared cookie options. `httpOnly` keeps the token away from
 // JavaScript, and `secure` is enabled only in production so local HTTP works.
+//
+// The deployed frontend and backend live on different Vercel subdomains, which
+// browsers treat as different sites (vercel.app is a public suffix), so in
+// production the cookie must use SameSite=None to be sent on cross-site
+// requests. SameSite=None is only valid together with Secure.
 const getCookieOptions = () => ({
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax",
+  secure: IS_PRODUCTION,
+  sameSite: IS_PRODUCTION ? "none" : "lax",
 });
 
 // Picks only the safe, non-sensitive user fields so the password hash is
