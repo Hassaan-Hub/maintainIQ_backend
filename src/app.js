@@ -8,6 +8,7 @@ const userRoutes = require("./routes/user.routes");
 const dashboardRoutes = require("./routes/dashboard.routes");
 const publicRoutes = require("./routes/public.routes");
 const uploadRoutes = require("./routes/upload.routes");
+const { corsOptions } = require("./config/cors");
 const { IS_PRODUCTION } = require("./config/env");
 
 const app = express();
@@ -30,13 +31,11 @@ if (IS_PRODUCTION) {
   console.warn("JWT_SECRET is shorter than 32 characters; use a longer secret in production.");
 }
 
-// Allow only the configured frontend origin and let it send/receive the auth
-// cookie. Falls back to the local dev origin when FRONTEND_URL is not set.
-const FRONTEND_URL = (process.env.FRONTEND_URL || "http://localhost:5173").replace(
-  /\/+$/,
-  ""
-);
-app.use(cors({ origin: FRONTEND_URL, credentials: true }));
+// Allow only known frontend origins (see src/config/cors.js: FRONTEND_URL,
+// the live frontend in production, plus optional ALLOWED_ORIGINS extras) and
+// let them send/receive the auth cookie. Never a wildcard, because credentials
+// are required. Preflight OPTIONS requests are answered by the cors middleware.
+app.use(cors(corsOptions));
 app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
 

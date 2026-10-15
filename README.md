@@ -74,7 +74,8 @@ Variable names only — never commit real values.
 | `JWT_SECRET` | yes | Secret used to sign auth tokens |
 | `JWT_EXPIRES_IN` | no | Token lifetime (default `1d`) |
 | `NODE_ENV` | no | `development` / `production` (controls cookie `Secure`) |
-| `FRONTEND_URL` | no | Base URL used in QR links and the CORS origin (default `http://localhost:5173`) |
+| `FRONTEND_URL` | no | Base URL used in QR links and as the primary CORS origin (default `http://localhost:5173`) |
+| `ALLOWED_ORIGINS` | no | Extra comma-separated CORS origins (e.g. a second frontend deploy) |
 | `MONGO_TEST_DB` | no | Database name used by the test suite (default `maintainiq_test`) |
 | `SEED_DEMO_DB` | no | Database name targeted by `seed-demo` (defaults to the real DB) |
 | `AUTH_RATE_LIMIT_*` | no | Auth limiter window/max overrides |
@@ -164,8 +165,10 @@ Notes:
 - No `Domain` is set on the auth cookie; in production it uses
   `SameSite=None; Secure` because the frontend and backend are different sites
   (`vercel.app` is a public suffix), so cross-origin credentialed requests work.
-- Only the single origin in `FRONTEND_URL` is allowed by CORS, so changing the
-  frontend domain requires updating this variable and redeploying.
+- CORS allows an explicit allowlist only (never `*`, because credentials are
+  required): `FRONTEND_URL`, the live frontend origin in production, plus any
+  `ALLOWED_ORIGINS` extras; local Vite origins are allowed outside production.
+  Changing the frontend domain requires updating `FRONTEND_URL` and redeploying.
 - `PORT` is provided by Vercel and must not be set manually.
 
 ## API overview
