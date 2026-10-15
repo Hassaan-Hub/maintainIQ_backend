@@ -37,10 +37,13 @@ const DUMMY_PASSWORD_HASH = bcrypt.hashSync(
 // browsers treat as different sites (vercel.app is a public suffix), so in
 // production the cookie must use SameSite=None to be sent on cross-site
 // requests. SameSite=None is only valid together with Secure.
-const getCookieOptions = () => ({
+//
+// `isProduction` defaults to the environment so callers stay unchanged; it can
+// be passed explicitly to unit-test both branches.
+const getCookieOptions = (isProduction = IS_PRODUCTION) => ({
   httpOnly: true,
-  secure: IS_PRODUCTION,
-  sameSite: IS_PRODUCTION ? "none" : "lax",
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
 });
 
 // Picks only the safe, non-sensitive user fields so the password hash is
@@ -222,4 +225,10 @@ const logoutUser = (req, res) => {
   return res.status(200).json({ message: "Logged out successfully." });
 };
 
-module.exports = { registerUser, loginUser, getCurrentUser, logoutUser };
+module.exports = {
+  getCookieOptions,
+  registerUser,
+  loginUser,
+  getCurrentUser,
+  logoutUser,
+};
